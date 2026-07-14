@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ certificate.recipient_name }} - {{ certificate.certificate_title }} | CertifySecure{% endblock %}
+
+{% block content %}
+<div class="certificate-wrapper">
+    <div class="certificate-frame">
+        
+        <!-- Top Header of the Certificate -->
+        <div class="cert-header">
+            <div class="authority-logo">
+                <i class="fas fa-award"></i>
+            </div>
+            <h2>CertifySecure Certification Authority</h2>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 0.1em; text-transform: uppercase;">
+                Cryptographic ID: {{ certificate.id }}
+            </div>
+        </div>
+
+        <!-- Body / Content of the Certificate -->
+        <div class="cert-body">
+            <h2>This is to certify that</h2>
+            <div class="cert-recipient">{{ certificate.recipient_name }}</div>
+            <p class="cert-details-text">has successfully completed the program requirements and met all academic standards for the achievement of</p>
+            <div class="cert-course">{{ certificate.certificate_title }}</div>
+            <p class="cert-details-text" style="font-size: 0.95rem; margin-top: 1rem;">
+                Issued on <strong>{{ certificate.issue_date.strftime('%B %d, %Y') }}</strong>
+                {% if certificate.expiry_date %}
+                | Expires on <strong>{{ certificate.expiry_date.strftime('%B %d, %Y') }}</strong>
+                {% endif %}
+            </p>
+            {% if certificate.grade %}
+            <p class="cert-details-text" style="font-size: 0.95rem; margin-top: 0.5rem; color: var(--primary);">
+                Performance Rating: <strong>{{ certificate.grade }}</strong>
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- Footer / Signatures of the Certificate -->
+        <div class="cert-footer">
+            <div class="cert-sign">
+                <div class="cert-signature-img">Secured</div>
+                <span>Signing Authority</span>
+            </div>
+            <div class="cert-qr">
+                <!-- QR Code linking to verification URL -->
+                <img src="{{ qr_image }}" alt="Verification QR Code">
+            </div>
+            <div class="cert-sign">
+                <div class="cert-signature-img" style="font-family: 'Outfit'; font-weight: 300; font-size: 1.15rem; letter-spacing: 2px;">VERIFIED</div>
+                <span>RSA-2048 Bit Signed</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Triggers for sharing / printing -->
+<div class="cert-actions">
+    <button onclick="window.print()" class="btn-primary" id="btn-print-certificate">
+        <i class="fas fa-print"></i> Print / Download PDF
+    </button>
+    <button id="btn-copy-link" data-url="{{ request.url_root }}verify/{{ certificate.id }}" class="btn-secondary">
+        <i class="fas fa-share-nodes"></i> Share & Copy Verification Link
+    </button>
+</div>
+{% endblock %}

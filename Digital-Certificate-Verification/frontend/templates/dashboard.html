@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Issuer Dashboard | CertifySecure{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+    <div>
+        <h1 style="font-size: 2.25rem; font-weight: 800;">Issuer Dashboard</h1>
+        <p style="color: var(--text-secondary);">Manage, sign, and revoke digital credentials.</p>
+    </div>
+    <a href="{{ url_for('issue_certificate') }}" class="btn-primary" id="btn-issue-new">
+        <i class="fas fa-plus"></i> Issue New Certificate
+    </a>
+</div>
+
+<!-- Statistics Cards -->
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Total Credentials</h3>
+            <p>{{ total_issued }}</p>
+        </div>
+        <div class="stat-icon total">
+            <i class="fas fa-file-signature"></i>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Active / Valid</h3>
+            <p>{{ active_count }}</p>
+        </div>
+        <div class="stat-icon active">
+            <i class="fas fa-circle-check"></i>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Revoked</h3>
+            <p>{{ revoked_count }}</p>
+        </div>
+        <div class="stat-icon revoked">
+            <i class="fas fa-ban"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Certificates Registry Table -->
+<div class="glass-card" style="padding: 2rem;">
+    <div class="table-header-actions">
+        <h2 style="font-size: 1.5rem; font-weight: 700;">Credentials Registry</h2>
+        <div class="table-search">
+            <i class="fas fa-magnifying-glass"></i>
+            <input type="text" id="search-cert" class="form-control" placeholder="Search by recipient or ID...">
+        </div>
+    </div>
+
+    <div class="responsive-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Reference ID</th>
+                    <th>Recipient</th>
+                    <th>Certificate Title</th>
+                    <th>Issue Date</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cert in certificates %}
+                <tr>
+                    <td class="cert-id-col" style="font-family: monospace; font-weight: bold; color: var(--primary);">{{ cert.id }}</td>
+                    <td class="recipient-col" style="font-weight: 600;">{{ cert.recipient_name }}</td>
+                    <td class="title-col">{{ cert.certificate_title }}</td>
+                    <td>{{ cert.issue_date.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {% if cert.status == 'Active' %}
+                            <span class="badge badge-active">Active</span>
+                        {% else %}
+                            <span class="badge badge-revoked">Revoked</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <a href="{{ url_for('view_certificate', cert_id=cert.id) }}" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" target="_blank">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        {% if cert.status == 'Active' %}
+                        <form action="{{ url_for('revoke_certificate', cert_id=cert.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to revoke this certificate? This action is irreversible.');">
+                            <button type="submit" class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background: var(--error); color: #fff; box-shadow: none;">
+                                <i class="fas fa-ban"></i> Revoke
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 3rem 0;">
+                        <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 1rem; display: block; opacity: 0.5;"></i>
+                        No certificates issued yet. Click "Issue New Certificate" above to begin.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

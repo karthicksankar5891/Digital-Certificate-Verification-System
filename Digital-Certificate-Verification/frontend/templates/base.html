@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Digital Certificate Verification{% endblock %}</title>
+    <meta name="description" content="Secure, cryptographically signed digital certificates with instant verification. Built with advanced security features.">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="logo" id="nav-logo">
+                <i class="fas fa-shield-halved"></i> CertifySecure
+            </a>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}" class="{% if request.path == '/' %}active{% endif %}">Home</a></li>
+                {% if session.get('admin_logged_in') %}
+                    <li><a href="{{ url_for('dashboard') }}" class="{% if '/admin/' in request.path %}active{% endif %}">Dashboard</a></li>
+                    <li><a href="{{ url_for('logout') }}" class="btn-admin"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}" class="btn-admin" id="btn-login"><i class="fas fa-lock"></i> Issuer Login</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {% if category == 'success' %}
+                                <i class="fas fa-circle-check"></i>
+                            {% elif category == 'danger' %}
+                                <i class="fas fa-circle-exclamation"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fas fa-triangle-exclamation"></i>
+                            {% else %}
+                                <i class="fas fa-circle-info"></i>
+                            {% endif %}
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div style="text-align: center; padding: 2rem 0; color: var(--text-secondary); border-top: 1px solid var(--border-color); font-size: 0.875rem;">
+            &copy; 2026 CertifySecure. All rights reserved. Cryptographically Signed & Secured.
+        </div>
+    </footer>
+
+    <!-- Core Script -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

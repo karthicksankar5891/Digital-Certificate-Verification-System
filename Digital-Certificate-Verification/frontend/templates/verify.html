@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Certificate Verification Result | CertifySecure{% endblock %}
+
+{% block content %}
+<div class="glass-card result-container" style="max-width: 800px; margin: 0 auto;">
+    
+    {% if status == 'valid' %}
+        <div class="status-badge valid">
+            <i class="fas fa-circle-check"></i> Valid & Authentic
+        </div>
+        
+        <h2 style="font-size: 2.25rem; margin-bottom: 0.5rem;">Cryptographic Verification Passed</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">The digital signature of this credential matches the issuer's public key. The record is intact and verified.</p>
+        
+        <div class="details-grid">
+            <div class="detail-item">
+                <label>Recipient Name</label>
+                <p>{{ certificate.recipient_name }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Certificate Title</label>
+                <p>{{ certificate.certificate_title }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Course / Program</label>
+                <p>{{ certificate.course_name }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Reference ID</label>
+                <p>{{ certificate.id }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Issue Date</label>
+                <p>{{ certificate.issue_date.strftime('%B %d, %Y') }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Expiry Date</label>
+                <p>
+                    {% if certificate.expiry_date %}
+                        {{ certificate.expiry_date.strftime('%B %d, %Y') }}
+                    {% else %}
+                        No Expiration
+                    {% endif %}
+                </p>
+            </div>
+            {% if certificate.grade %}
+            <div class="detail-item" style="grid-column: 1 / -1;">
+                <label>Grade / Score</label>
+                <p>{{ certificate.grade }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="crypto-audit-box">
+            <h4><i class="fas fa-microchip" style="color: var(--primary);"></i> Cryptographic Audit Trail</h4>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                This certificate has been validated against the system's public key using standard RSA-SHA256 signature verification.
+            </p>
+            <div style="margin-bottom: 1rem;">
+                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 600;">Canonical Sign Payload</label>
+                <div class="crypto-hash-text">{{ certificate.to_canonical_string() }}</div>
+            </div>
+            <div>
+                <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 600;">RSA Signature Hex</label>
+                <div class="crypto-hash-text" style="color: #60a5fa;">{{ certificate.signature[:128] }}... [Truncated {{ certificate.signature|length }} hex characters]</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 3rem; display: flex; justify-content: center; gap: 1.5rem;">
+            <a href="{{ url_for('view_certificate', cert_id=certificate.id) }}" class="btn-primary" id="btn-view-credential">
+                <i class="fas fa-award"></i> View Official Certificate
+            </a>
+            <a href="{{ url_for('index') }}" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Verify Another
+            </a>
+        </div>
+
+    {% elif status == 'tampered' %}
+        <div class="status-badge invalid">
+            <i class="fas fa-triangle-exclamation"></i> Signature Mismatch
+        </div>
+        
+        <h2 style="font-size: 2.25rem; color: var(--error); margin-bottom: 1rem;">Verification Failed!</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+            The cryptographic signature for this certificate is invalid. This indicates that the record's details have been tampered with after issuance, or the certificate is forged. Do not trust this document.
+        </p>
+        
+        {% if certificate %}
+        <div class="details-grid" style="opacity: 0.6; pointer-events: none; margin-bottom: 2rem;">
+            <div class="detail-item">
+                <label>Recipient (Unverified)</label>
+                <p>{{ certificate.recipient_name }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Certificate Title (Unverified)</label>
+                <p>{{ certificate.certificate_title }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 3rem;">
+            <a href="{{ url_for('index') }}" class="btn-primary" style="background: var(--error); color: #fff; box-shadow: 0 0 10px var(--error-glow);">
+                <i class="fas fa-rotate-left"></i> Return to Verification Home
+            </a>
+        </div>
+
+    {% elif status == 'revoked' %}
+        <div class="status-badge revoked">
+            <i class="fas fa-ban"></i> Revoked Certificate
+        </div>
+        
+        <h2 style="font-size: 2.25rem; color: var(--warning); margin-bottom: 1rem;">Credential Revoked</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+            This certificate was originally signed and issued, but has since been marked as <strong>Revoked</strong> by the issuing authority. It is no longer active or valid.
+        </p>
+
+        <div class="details-grid" style="opacity: 0.6; pointer-events: none; margin-bottom: 2rem;">
+            <div class="detail-item">
+                <label>Recipient Name</label>
+                <p>{{ certificate.recipient_name }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Certificate Title</label>
+                <p>{{ certificate.certificate_title }}</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 3rem;">
+            <a href="{{ url_for('index') }}" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Lookup
+            </a>
+        </div>
+
+    {% elif status == 'expired' %}
+        <div class="status-badge expired">
+            <i class="fas fa-hourglass-end"></i> Expired Credential
+        </div>
+        
+        <h2 style="font-size: 2.25rem; color: var(--warning); margin-bottom: 1rem;">Certificate Expired</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+            The cryptographic integrity is valid, but the certificate has passed its set expiration date of <strong>{{ certificate.expiry_date.strftime('%B %d, %Y') }}</strong> and is no longer active.
+        </p>
+
+        <div style="margin-top: 3rem;">
+            <a href="{{ url_for('index') }}" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Lookup
+            </a>
+        </div>
+
+    {% else %}
+        <div class="status-badge invalid">
+            <i class="fas fa-circle-xmark"></i> Not Found
+        </div>
+        
+        <h2 style="font-size: 2.25rem; margin-bottom: 1rem;">Certificate Not Registered</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+            The Certificate Reference ID <strong style="color: var(--primary);">{{ cert_id }}</strong> was not found in our registry. Please check the spelling and try again.
+        </p>
+
+        <div style="margin-top: 3rem;">
+            <a href="{{ url_for('index') }}" class="btn-primary">
+                <i class="fas fa-arrow-left"></i> Check Another Reference ID
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

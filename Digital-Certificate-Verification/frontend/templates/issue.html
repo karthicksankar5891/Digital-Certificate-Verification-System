@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Issue New Certificate | CertifySecure{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2.5rem;">
+    <a href="{{ url_for('dashboard') }}" class="btn-secondary" style="margin-bottom: 1.5rem;">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+    <h1 style="font-size: 2.25rem; font-weight: 800;">Issue Cryptographic Certificate</h1>
+    <p style="color: var(--text-secondary);">Fill in the details below. The credential will be automatically hashed, signed, and registered in the database.</p>
+</div>
+
+<div class="glass-card" style="max-width: 800px;">
+    <form action="{{ url_for('issue_certificate') }}" method="POST" id="issue-form">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+            
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="recipient_name">Recipient Name</label>
+                <input type="text" id="recipient_name" name="recipient_name" class="form-control" placeholder="e.g. Jane Doe" required>
+            </div>
+
+            <div class="form-group">
+                <label for="certificate_title">Certificate Title</label>
+                <input type="text" id="certificate_title" name="certificate_title" class="form-control" placeholder="e.g. Certificate of Completion" required>
+            </div>
+
+            <div class="form-group">
+                <label for="course_name">Course / Program Name</label>
+                <input type="text" id="course_name" name="course_name" class="form-control" placeholder="e.g. Python Web Development" required>
+            </div>
+
+            <div class="form-group">
+                <label for="grade">Grade / Score (Optional)</label>
+                <input type="text" id="grade" name="grade" class="form-control" placeholder="e.g. Grade A, 95%, Pass">
+            </div>
+
+            <div class="form-group">
+                <label for="issue_date">Issue Date</label>
+                <input type="date" id="issue_date" name="issue_date" class="form-control" value="{{ datetime_date_today }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="expiry_date">Expiry Date (Optional)</label>
+                <input type="date" id="expiry_date" name="expiry_date" class="form-control">
+            </div>
+
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; gap: 1.5rem;">
+            <button type="submit" class="btn-primary" id="btn-issue-submit">
+                <i class="fas fa-file-signature"></i> Hash, Sign & Issue Certificate
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block head %}
+<script>
+    // Set default value for issue_date input to today
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('issue_date').value = today;
+    });
+</script>
+{% endblock %}
